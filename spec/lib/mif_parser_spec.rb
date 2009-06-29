@@ -12,7 +12,6 @@ describe MifParser do
     end
   end
 
-
   describe 'when parsing MIF file' do
 
     it 'should call out to mif2xml' do
