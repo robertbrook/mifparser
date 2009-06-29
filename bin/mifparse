@@ -1,0 +1,5 @@
+require 'mifparser'
+
+puts 'mifparser ' + MifParser::VERSION
+
+puts MifParser.new.parse(ARGV[0])

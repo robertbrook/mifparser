@@ -4,6 +4,8 @@ require 'hpricot'
 
 class MifParser
 
+  VERSION = "0.0.0"
+
   def clean element
     element.at('text()').to_s[/`(.+)'/]
     $1.gsub('.','-')
@@ -14,7 +16,6 @@ class MifParser
     xml_file = Tempfile.new("#{mif_file}.xml",'.')
     xml_file.close # was open
     Kernel.system "mif2xml < #{mif_file} > #{xml_file.path}"
-    puts xml_file.path
     result = parse_xml_file(xml_file.path)
     xml_file.delete
     result

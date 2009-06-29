@@ -1,3 +1,5 @@
+Parser for MIF documents.
+
 Requires you install mif2xml:
 
 http://code.qnot.org/svn/projects/mif2xml/trunk/README

@@ -2,7 +2,7 @@ require 'rubygems'
 gem 'rspec'
 require 'spec'
 
-require File.dirname(__FILE__) + '/../lib/mif_parser'
+require File.dirname(__FILE__) + '/../lib/mifparser'
 
 def fixture(filename)
   open("#{File.dirname(__FILE__)}/fixtures/#{filename}").read
