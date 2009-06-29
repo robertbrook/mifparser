@@ -23,7 +23,7 @@ describe MifParser do
       temp_xml_file.should_receive(:close)
       Kernel.should_receive(:system).with("mif2xml < #{mif_file} > #{tempfile_path}")
 
-      @parser.should_receive(:parse_xml_file).with(tempfile_path)
+      @parser.should_receive(:parse_xml_file).with(tempfile_path, {})
       temp_xml_file.should_receive(:delete)
 
       @parser.parse(mif_file)

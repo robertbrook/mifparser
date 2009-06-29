@@ -2,6 +2,8 @@ require 'mifparser'
 
 if ARGV[0] == '-v'
   puts 'mifparser ' + MifParser::VERSION
+elsif ARGV[0] == '--html'
+  puts MifParser.new.parse(ARGV[1], {:html => true})
 else
   puts MifParser.new.parse(ARGV[0])
 end
