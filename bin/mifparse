@@ -1,5 +1,7 @@
 require 'mifparser'
 
-puts 'mifparser ' + MifParser::VERSION
-
-puts MifParser.new.parse(ARGV[0])
+if ARGV[0] == '-v'
+  puts 'mifparser ' + MifParser::VERSION
+else
+  puts MifParser.new.parse(ARGV[0])
+end
