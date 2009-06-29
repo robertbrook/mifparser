@@ -28,6 +28,8 @@ describe MifParser do
 
       @parser.parse(mif_file)
     end
+    
+    it 'should generate a valid XML file'
 
   end
 
