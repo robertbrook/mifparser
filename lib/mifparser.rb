@@ -26,8 +26,10 @@ class MifParser
     parse_xml IO.read(xml_file)
   end
 
-  def is_instructions?(string)
-    string[/(`Header'|REISSUE|Running H\/F|line of text which is to be numbered|Use the following fragment to insert an amendment line number)/]
+  def is_instructions?(flow)
+    instruction_regexp = /(`Header'|REISSUE|Running H\/F|line of text which is to be numbered|Use the following fragment to insert an amendment line number)/
+    flow.inner_text[instruction_regexp] ||
+    (flow.at('PgfTag') && flow.at('PgfTag/text()').to_s[/AmendmentLineNumber/])
   end
 
   def parse_xml xml
@@ -37,7 +39,7 @@ class MifParser
     stack = []
     xml = ['<Document>']
     flows.each do |flow|
-      handle_flow(flow, stack, xml) unless is_instructions?(flow.inner_text)
+      handle_flow(flow, stack, xml) unless is_instructions?(flow)
     end
     xml << '</Document>'
     xml.join('')
@@ -53,7 +55,7 @@ class MifParser
           xml << '>'
         when 'String'
           string = clean(element)
-          xml << string unless is_instructions?(string)
+          xml << string
         when 'ElementEnd'
           name = stack.pop
           xml << '</'
