@@ -5,6 +5,7 @@ describe MifParser do
   before do
     @parser = MifParser.new
   end
+  
   describe 'when creating new parser' do
     it 'should create parser' do
       @parser.should_not be_nil
