@@ -1,0 +1,5 @@
+bin/mifparse
+lib/mifparser.rb
+Rakefile
+README
+Manifest
