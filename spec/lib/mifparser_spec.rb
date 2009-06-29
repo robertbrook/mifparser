@@ -23,7 +23,7 @@ describe MifParser do
       temp_xml_file.should_receive(:close)
       Kernel.should_receive(:system).with("mif2xml < #{mif_file} > #{tempfile_path}")
 
-      @parser.should_receive(:parse_xml_file).with(tempfile_path)
+      @parser.should_receive(:parse_xml_file).with(tempfile_path, {})
       temp_xml_file.should_receive(:delete)
 
       @parser.parse(mif_file)
@@ -34,6 +34,13 @@ describe MifParser do
   describe 'when parsing MIF XML file' do
     before do
       @result = @parser.parse_xml(fixture('pbc0930106a.mif.xml'))
+    end
+
+    it 'should remove instructions text' do
+      @result.should_not include('Use the following fragment to insert an amendment line number')
+      @result.should_not include('REISSUE')
+      @result.should_not include('continued,')
+      @result.should_not include('House of CommonsHouse of Commons')
     end
 
     it 'should make ETags into elements' do
