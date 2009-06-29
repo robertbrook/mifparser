@@ -29,8 +29,6 @@ describe MifParser do
       @parser.parse(mif_file)
     end
     
-    it 'should generate a valid XML file'
-
   end
 
   describe 'when parsing MIF XML file' do
