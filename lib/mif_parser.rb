@@ -9,7 +9,7 @@ class MifParser
     $1.gsub('.','-')
   end
 
-  # e.g. parser.parse pbc0930106a.mif
+  # e.g. parser.parse("pbc0930106a.mif")
   def parse mif_file
     xml_file = Tempfile.new("#{mif_file}.xml",'.')
     xml_file.close # was open
@@ -20,7 +20,7 @@ class MifParser
     result
   end
 
-  # e.g. parser.parse pbc0930106a.mif.xml
+  # e.g. parser.parse_xml_file("pbc0930106a.mif.xml")
   def parse_xml_file xml_file
     parse_xml IO.read(xml_file)
   end
