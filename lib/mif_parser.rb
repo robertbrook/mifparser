@@ -45,7 +45,7 @@ class MifParser
           xml << '</'
           xml << name
           xml << '>'
-          xml << "\n" unless name[/STLords/]
+          xml << "\n" unless name[/(Day|STHouse|STLords|STText)/]
       end
     end
 

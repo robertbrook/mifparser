@@ -43,12 +43,12 @@ describe MifParser do
           with_tag('HeadNotice') do
             with_tag('NoticeOfAmds', :text => 'Notices of Amendments')
             with_tag('Given', :text => 'given on')
-            with_tag('Date') do
+            with_tag('Date', :text => 'Monday 1 June 2009') do
               with_tag('Day', :text => 'Monday')
               with_tag('Date-text', :text => '1 June 2009')
             end
             with_tag('Stageheader', :text => 'Public Bill Committee' )
-            with_tag('CommitteeShorttitle') do
+            with_tag('CommitteeShorttitle', :text => 'Local Democracy, Economic Development and Construction Bill [Lords]') do
               with_tag('STText', :text => 'Local Democracy, Economic Development and Construction Bill')
               with_tag('STHouse', :text => '[Lords]')
             end
