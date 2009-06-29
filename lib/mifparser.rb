@@ -26,6 +26,10 @@ class MifParser
     parse_xml IO.read(xml_file)
   end
 
+  def is_instructions?(string)
+    string[/(`Header'|REISSUE|Running H\/F|line of text which is to be numbered|Use the following fragment to insert an amendment line number)/]
+  end
+
   def parse_xml xml
     doc = Hpricot.XML xml
     flows = (doc/'TextFlow')
@@ -33,26 +37,30 @@ class MifParser
     stack = []
     xml = ['<Document>']
     flows.each do |flow|
-      flow.traverse_element do |element|
-        case element.name
-          when 'ETag'
-            stack << clean(element)
-            xml << '<'
-            xml << stack.last
-            xml << '>'
-          when 'String'
-            xml << clean(element)
-          when 'ElementEnd'
-            name = stack.pop
-            xml << '</'
-            xml << name
-            xml << '>'
-            xml << "\n" unless name[/(Day|STHouse|STLords|STText)/]
-        end
-      end
+      handle_flow(flow, stack, xml) unless is_instructions?(flow.inner_text)
     end
-
     xml << '</Document>'
     xml.join('')
+  end
+
+  def handle_flow flow, stack, xml
+    flow.traverse_element do |element|
+      case element.name
+        when 'ETag'
+          stack << clean(element)
+          xml << '<'
+          xml << stack.last
+          xml << '>'
+        when 'String'
+          string = clean(element)
+          xml << string unless is_instructions?(string)
+        when 'ElementEnd'
+          name = stack.pop
+          xml << '</'
+          xml << name
+          xml << '>'
+          xml << "\n" unless name[/(Day|STHouse|STLords|STText)/]
+      end
+    end
   end
 end

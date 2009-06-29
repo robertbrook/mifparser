@@ -36,6 +36,13 @@ describe MifParser do
       @result = @parser.parse_xml(fixture('pbc0930106a.mif.xml'))
     end
 
+    it 'should remove instructions text' do
+      @result.should_not include('Use the following fragment to insert an amendment line number')
+      @result.should_not include('REISSUE')
+      @result.should_not include('continued,')
+      @result.should_not include('House of CommonsHouse of Commons')
+    end
+
     it 'should make ETags into elements' do
       puts @result
       @result.should have_tag('Amendments-Commons') do
