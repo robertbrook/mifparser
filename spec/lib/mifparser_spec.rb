@@ -44,7 +44,6 @@ describe MifParser do
     end
 
     it 'should make ETags into elements' do
-      puts @result
       @result.should have_tag('Amendments-Commons') do
         with_tag('Head') do
           with_tag('HeadNotice') do

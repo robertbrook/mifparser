@@ -51,6 +51,31 @@ class MifParser
     xml.join('')
   end
 
+  def handle_flow flow, stack, xml
+    flow.traverse_element do |element|
+      case element.name
+        when 'ETag'
+          tag = clean(element)
+          stack << tag
+          xml << '<'
+          xml << tag
+          xml << '>'
+        when 'Char'
+          char = element.at('text()').to_s
+          xml << ' ' if char == 'EmSpace'
+        when 'String'
+          string = clean(element)
+          xml << string
+        when 'ElementEnd'
+          tag = stack.pop
+          xml << '</'
+          xml << tag
+          xml << '>'
+          xml << "\n" unless tag[/(Day|STHouse|STLords|STText)/]
+      end
+    end
+  end
+
   DIV = %w[Amendments-Commons Head HeadConsider Date
       Committee Clause-Committee Order-Committee
       CrossHeadingSch Amendment
@@ -97,6 +122,9 @@ class MifParser
             xml << tag
             xml << ']]: '
           end
+        when 'Char'
+          char = element.at('text()').to_s
+          xml << ' ' if char == 'EmSpace'
         when 'String'
           string = clean(element)
           xml << string
@@ -124,24 +152,4 @@ class MifParser
     end
   end
 
-  def handle_flow flow, stack, xml
-    flow.traverse_element do |element|
-      case element.name
-        when 'ETag'
-          stack << clean(element)
-          xml << '<'
-          xml << stack.last
-          xml << '>'
-        when 'String'
-          string = clean(element)
-          xml << string
-        when 'ElementEnd'
-          name = stack.pop
-          xml << '</'
-          xml << name
-          xml << '>'
-          xml << "\n" unless name[/(Day|STHouse|STLords|STText)/]
-      end
-    end
-  end
 end
