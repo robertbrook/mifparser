@@ -1,6 +1,7 @@
 require 'tempfile'
 require 'rubygems'
 require 'hpricot'
+require 'htmlentities'
 
 class MifParser
 
@@ -8,7 +9,13 @@ class MifParser
 
   def clean element
     element.at('text()').to_s[/`(.+)'/]
-    $1.gsub('.','-')
+    text = $1
+    text.gsub!('.','-')
+    text.gsub!('\xd4 ', '‘')
+    text.gsub!('\xd5 ','’')
+    text.gsub!('\xd2 ','“')
+    text.gsub!('\xd3 ','”')
+    text
   end
 
   # e.g. parser.parse("pbc0930106a.mif")
@@ -37,7 +44,7 @@ class MifParser
     flows = (doc/'TextFlow')
 
     stack = []
-    xml = [options[:html] ? '<html><body>' : '<Document>']
+    xml = [options[:html] ? '<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body>' : '<Document>']
     flows.each do |flow|
       unless is_instructions?(flow)
         if options[:html]
@@ -51,6 +58,31 @@ class MifParser
     xml.join('')
   end
 
+  def get_char element
+    char = element.at('text()').to_s
+    case char
+      when 'EmSpace'
+        ' '
+      when 'Pound'
+        '£'
+      when 'EmDash'
+        '—'
+      when 'HardReturn'
+        "\n"
+      else
+        '[[' + char + ']]'
+    end
+  end
+
+  def get_html_for_char element
+    char = get_char(element)
+    if char == "\n"
+      "<br />"
+    else
+      HTMLEntities.new.encode(char)
+    end
+  end
+
   def handle_flow flow, stack, xml
     flow.traverse_element do |element|
       case element.name
@@ -61,8 +93,7 @@ class MifParser
           xml << tag
           xml << '>'
         when 'Char'
-          char = element.at('text()').to_s
-          xml << ' ' if char == 'EmSpace'
+          xml << get_char(element)
         when 'String'
           string = clean(element)
           xml << string
@@ -82,8 +113,9 @@ class MifParser
       NewClause-Committee Order-House].inject({}){|h,v| h[v]=true; h}
 
   P = %w[Stageheader CommitteeShorttitle ClausesToBeConsidered
-      MarshalledOrderNote Amendment-Text SubSection Schedule-Committee
+      MarshalledOrderNote SubSection Schedule-Committee
       Para Para-sch SubPara-sch SubSubPara-sch
+      Definition
       CrossHeadingTitle Heading-text
       ClauseTitle ClauseText Move TextContinuation
       OrderDate OrderPreamble OrderText OrderPara
@@ -91,8 +123,8 @@ class MifParser
       OrderAmendmentText
       ResolutionPreamble].inject({}){|h,v| h[v]=true; h}
 
-  SPAN = %w[Day Date-text STText Notehead NoteTxt Amendment-Number Number Page
-      Line ].inject({}){|h,v| h[v]=true; h}
+  SPAN = %w[Day Date-text STText Notehead NoteTxt
+      Amendment-Text Amendment-Number Number Page Line ].inject({}){|h,v| h[v]=true; h}
 
   UL = %w[Sponsors].inject({}){|h,v| h[v]=true; h}
   LI = %w[Sponsor].inject({}){|h,v| h[v]=true; h}
@@ -123,10 +155,9 @@ class MifParser
             xml << ']]: '
           end
         when 'Char'
-          char = element.at('text()').to_s
-          xml << ' ' if char == 'EmSpace'
+          xml << get_html_for_char(element)
         when 'String'
-          string = clean(element)
+          string = HTMLEntities.new.encode(clean(element))
           xml << string
         when 'ElementEnd'
           tag = stack.pop
