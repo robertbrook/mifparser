@@ -10,11 +10,14 @@ class MifParser
   def clean element
     element.at('text()').to_s[/`(.+)'/]
     text = $1
-    text.gsub!('.','-')
-    text.gsub!('\xd4 ', '‘')
-    text.gsub!('\xd5 ','’')
-    text.gsub!('\xd2 ','“')
-    text.gsub!('\xd3 ','”')
+    if text
+      text.gsub!('\xd4 ', '‘')
+      text.gsub!('\xd5 ','’')
+      text.gsub!('\xd2 ','“')
+      text.gsub!('\xd3 ','”')
+    else
+      ''
+    end
     text
   end
 
@@ -94,7 +97,7 @@ class MifParser
           xml << '>'
         when 'Char'
           xml << get_char(element)
-        when 'String'
+        when 'PgfNumString', 'String'
           string = clean(element)
           xml << string
         when 'ElementEnd'
@@ -107,29 +110,29 @@ class MifParser
     end
   end
 
-  DIV = %w[Amendments-Commons Head HeadConsider Date
-      Committee Clause-Committee Order-Committee
+  DIV = %w[Amendments.Commons Head HeadConsider Date
+      Committee Clause.Committee Order.Committee
       CrossHeadingSch Amendment
-      NewClause-Committee Order-House].inject({}){|h,v| h[v]=true; h}
+      NewClause.Committee Order.House].inject({}){|h,v| h[v]=true; h}
 
   P = %w[Stageheader CommitteeShorttitle ClausesToBeConsidered
-      MarshalledOrderNote SubSection Schedule-Committee
-      Para Para-sch SubPara-sch SubSubPara-sch
+      MarshalledOrderNote SubSection Schedule.Committee
+      Para Para.sch SubPara.sch SubSubPara.sch
       Definition
-      CrossHeadingTitle Heading-text
+      CrossHeadingTitle Heading.text
       ClauseTitle ClauseText Move TextContinuation
       OrderDate OrderPreamble OrderText OrderPara
-      Order-Motion OrderHeading
+      Order.Motion OrderHeading
       OrderAmendmentText
       ResolutionPreamble].inject({}){|h,v| h[v]=true; h}
 
-  SPAN = %w[Day Date-text STText Notehead NoteTxt
-      Amendment-Text Amendment-Number Number Page Line ].inject({}){|h,v| h[v]=true; h}
+  SPAN = %w[Day Date.text STText Notehead NoteTxt
+      Amendment.Text Amendment.Number Number Page Line ].inject({}){|h,v| h[v]=true; h}
 
   UL = %w[Sponsors].inject({}){|h,v| h[v]=true; h}
   LI = %w[Sponsor].inject({}){|h,v| h[v]=true; h}
 
-  HR = %w[Separator-thick].inject({}){|h,v| h[v]=true; h}
+  HR = %w[Separator.thick].inject({}){|h,v| h[v]=true; h}
 
   def handle_flow_to_html(flow, stack, xml)
     flow.traverse_element do |element|
@@ -156,9 +159,13 @@ class MifParser
           end
         when 'Char'
           xml << get_html_for_char(element)
-        when 'String'
-          string = HTMLEntities.new.encode(clean(element))
-          xml << string
+        when 'PgfNumString', 'String'
+          string = clean(element)
+          if string
+            string.gsub!('\t',' ')
+            string = HTMLEntities.new.encode(string)
+            xml << string
+          end
         when 'ElementEnd'
           tag = stack.pop
           if DIV[tag]
