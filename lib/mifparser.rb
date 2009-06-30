@@ -51,9 +51,28 @@ class MifParser
     xml.join('')
   end
 
-  DIV = %w[Amendments-Commons Head HeadConsider Date Committee Clause-Committee].inject({}) {|hash, value| hash[value] = true; hash}
-  P = %w[Stageheader CommitteeShorttitle ClausesToBeConsidered MarshalledOrderNote Sponsors Amendment-Text SubSection].inject({}) {|hash, value| hash[value] = true; hash}
-  SPAN = %w[Day Date-text STText Notehead NoteTxt Sponsor Amendment-Number Number Page Line ].inject({}) {|hash, value| hash[value] = true; hash}
+  DIV = %w[Amendments-Commons Head HeadConsider Date
+      Committee Clause-Committee Order-Committee
+      CrossHeadingSch Amendment
+      NewClause-Committee Order-House].inject({}){|h,v| h[v]=true; h}
+
+  P = %w[Stageheader CommitteeShorttitle ClausesToBeConsidered
+      MarshalledOrderNote Amendment-Text SubSection Schedule-Committee
+      Para Para-sch SubPara-sch SubSubPara-sch
+      CrossHeadingTitle Heading-text
+      ClauseTitle ClauseText Move TextContinuation
+      OrderDate OrderPreamble OrderText OrderPara
+      Order-Motion OrderHeading
+      OrderAmendmentText
+      ResolutionPreamble].inject({}){|h,v| h[v]=true; h}
+
+  SPAN = %w[Day Date-text STText Notehead NoteTxt Amendment-Number Number Page
+      Line ].inject({}){|h,v| h[v]=true; h}
+
+  UL = %w[Sponsors].inject({}){|h,v| h[v]=true; h}
+  LI = %w[Sponsor].inject({}){|h,v| h[v]=true; h}
+
+  HR = %w[Separator-thick].inject({}){|h,v| h[v]=true; h}
 
   def handle_flow_to_html(flow, stack, xml)
     flow.traverse_element do |element|
@@ -65,12 +84,18 @@ class MifParser
             xml << "<div class='#{tag}'>"
           elsif P[tag]
             xml << "<p class='#{tag}'>"
+          elsif UL[tag]
+            xml << "<ul class='#{tag}'>"
+          elsif LI[tag]
+            xml << "<li class='#{tag}'>"
           elsif SPAN[tag]
             xml << "<span class='#{tag}'>"
+          elsif HR[tag]
+            xml << "<!-- page break -->"
           else
-            xml << '<p>'
+            xml << '<p>[['
             xml << tag
-            xml << ': '
+            xml << ']]: '
           end
         when 'String'
           string = clean(element)
@@ -81,8 +106,14 @@ class MifParser
             xml << "</div>"
           elsif P[tag]
             xml << "</p>"
+          elsif UL[tag]
+            xml << "</ul>"
+          elsif LI[tag]
+            xml << "</li>"
           elsif SPAN[tag]
             xml << "</span>"
+          elsif HR[tag]
+            # xml << ""
           else
             xml << '</p>'
           end
